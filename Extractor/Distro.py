@@ -6,87 +6,127 @@ Created on Apr 29, 2018
 '''
 
 from Extractor.Cobbler import Cobbler
-from pprint import pprint as pp
-from pprint import pformat
+from shlex import quote
+from operator import itemgetter, attrgetter
 
-cmd_help = """
-Usage: cobbler [options]
-
-Options:
-  -h, --help            show this help message and exit
-  --name=NAME           Name (Ex: Fedora-11-i386)
-  --ctime=CTIME         
-  --mtime=MTIME         
-  --uid=UID             
-  --owners=OWNERS       Owners (Owners list for authz_ownership (space
-                        delimited))
-  --kernel=KERNEL       Kernel (Absolute path to kernel on filesystem)
-  --initrd=INITRD       Initrd (Absolute path to kernel on filesystem)
-  --kopts=KERNEL_OPTIONS
-                        Kernel Options (Ex: selinux=permissive)
-  --kopts-post=KERNEL_OPTIONS_POST
-                        Kernel Options (Post Install) (Ex: clocksource=pit
-                        noapic)
-  --ksmeta=KS_META      Kickstart Metadata (Ex: dog=fang agent=86)
-  --arch=ARCH           Architecture (valid options:
-                        i386,x86_64,ia64,ppc,ppc64,ppc64le,s390,arm)
-  --breed=BREED         Breed (What is the type of distribution?)
-  --os-version=OS_VERSION
-                        OS Version (Needed for some virtualization
-                        optimizations)
-  --source-repos=SOURCE_REPOS
-                        Source Repos
-  --depth=DEPTH         Depth
-  --comment=COMMENT     Comment (Free form text description)
-  --tree-build-time=TREE_BUILD_TIME
-                        Tree Build Time
-  --mgmt-classes=MGMT_CLASSES
-                        Management Classes (Management classes for external
-                        config management)
-  --boot-files=BOOT_FILES
-                        TFTP Boot Files (Files copied into tftpboot beyond the
-                        kernel/initrd)
-  --fetchable-files=FETCHABLE_FILES
-                        Fetchable Files (Templates for tftp or wget/curl)
-  --template-files=TEMPLATE_FILES
-                        Template Files (File mappings for built-in config
-                        management)
-  --redhat-management-key=REDHAT_MANAGEMENT_KEY
-                        Red Hat Management Key (Registration key for RHN,
-                        Spacewalk, or Satellite)
-  --redhat-management-server=REDHAT_MANAGEMENT_SERVER
-                        Red Hat Management Server (Address of Spacewalk or
-                        Satellite Server)
-  --clobber             allow add to overwrite existing objects
-  --in-place            edit items in kopts or ksmeta without clearing the
-                        other items
-
-"""
+__all__ = [
+    'Distros',
+    'Distro'
+]
+__version__ = 0.1
+__date__ = '2018-05-01'
+__updated__ = '2018-05-01'
 
 
-class Distros(Cobbler):
+class Distro(object):
     '''
-    This is used to extract a distro from cobbler
+    This is used to hold and output distributions.
     '''
 
-    def __init__(self, cob, **kwargs):
+    kw_names = [
+        'ctime',
+        'mtime',
+        'uid',
+        'owners',
+        'kernel',
+        'initrd',
+        'kopts',
+        'kopts-post',
+        'ksmeta',
+        'arch',
+        'breed',
+        'os-version',
+        'source-repos',
+        'depth',
+        'comment',
+        'tree-build-time',
+        'mgmt-classes',
+        'boot-files',
+        'fetchable-files',
+        'template-files',
+        'redhat-management-key',
+        'redhat-management-server',
+    ]
+
+    def __init__(self, **kwargs):
+        '''
+        Constructor, taking parameters named following the CLI parameter names and setting an attribute with the value.
+        '''
+        self.name = kwargs.get('name')
+        for kw in kwargs:
+            if kw in self.kw_names:
+                setattr(self, kw, kwargs[kw])
+
+    def __repr__(self):
+        args = []
+
+        for kw in self.kw_names:
+            if hasattr(self, kw):
+                val = getattr(self, kw)
+            else:
+                val = None
+            args[kw] = val
+
+        return(args)
+
+    def __str__(self):
+        args = ['--name={}'.format(quote(self.name))]
+
+        for kw in self.kw_names:
+            if hasattr(self, kw):
+                val = getattr(self, kw)
+                if 'owners' == kw and len(val) > 0:
+                    val = ' '.join(val)
+                elif 'owners' == kw:
+                    continue
+                elif kw in ('ctime', 'mtime'):
+                    val = str(val)
+                elif 'uid' == kw:
+                    continue
+                elif 'depth' == kw:
+                    continue
+                elif 'comment' == kw and len(val) == 0:
+                    continue
+
+                arg = '--' + kw + '={}'.format(quote(val))
+                args.append(arg)
+
+        command = 'cobbler distro add ' + ' \\\n        '.join(args)
+
+        return(command)
+
+
+class Distros(object):
+    '''
+    This is used to extract the distributions from cobbler and output them as cobbler CLI commands
+    '''
+
+    def __init__(self, server, **kwargs):
         '''
         Constructor
         '''
-        super().__init__(**kwargs)
+        self.server = server
 
-        self.xyz = cob.get_distros()
+        self.distro_list = []
 
-        self.distro_list = self.get_distros()
+        distro_list = self.server.get_distros()
+        for dist in distro_list:
+            self.distro_list.append(self.create_distro(**dist))
+
+        self.distro_list = sorted(self.distro_list, key=attrgetter('name'))
+        self.loaded = True
 
     def __str__(self):
-        s = ''
-        for d in self.distro_list:
-            s += pformat(d) + "\n"
+        cmds = []
+        for dist in self.distro_list:
+            cmds.append(str(dist))
 
-        return(s)
+        return('\n\n'.join(cmds))
+
+    def create_distro(self, **dict):
+        d = Distro(**dict)
+        return(d)
 
 
 if __name__ == "__main__":
     x = Distros()
-    pp(x.get_distros())
