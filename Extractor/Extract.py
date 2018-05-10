@@ -26,8 +26,9 @@ from argparse import RawDescriptionHelpFormatter
 from argparse import SUPPRESS
 
 env = os.getenv('PYTHONPATH')
-from Extractor.Cobbler import Cobbler
-from Extractor.Distro import Distros as Distros
+from Extractor.Cobbler import CobblerServer
+from Extractor.Distro import Distros
+from Extractor.Profile import Profiles
 
 __all__ = []
 __version__ = 0.1
@@ -99,8 +100,10 @@ USAGE
         # Process arguments
         args = parser.parse_args()
 
-        cobbler = Cobbler(**vars(args))
+        cobbler = CobblerServer(**vars(args))
         x = Distros(cobbler, hostname=args.host)
+        print(x)
+        x = Profiles(cobbler, hostname=args.host)
         print(x)
 
         return 0
