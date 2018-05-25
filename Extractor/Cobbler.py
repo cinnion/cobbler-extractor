@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.6
 '''
 Created on Apr 29, 2018
 
@@ -12,15 +12,20 @@ from xmlrpc.client import Server
 from pprint import pprint as pp
 from shlex import quote
 import sys
-from keyword import kwlist
+from typing import Dict, Tuple, Callable
+from numbers import Number
+
 
 __all__ = [
     'CobblerServer',
-    'CobblerRecord'
+    'CobblerRecord',
+    'KeywordMap'
 ]
 __version__ = 0.5
 __date__ = '2018-05-01'
-__updated__ = '2018-05-01'
+__updated__ = '2018-05-25'
+
+KeywordMap = Dict[str, Tuple[str, Callable]]
 
 
 class CobblerServer(Server):
@@ -48,7 +53,7 @@ class CobblerRecord(object):
     This holds the base functionallity for handling the records for distros, profiles, systems, etc.
     '''
 
-    kw_map = {
+    kw_map: KeywordMap = {
     }
 
     def __init__(self, message='Unrecognized keyword: {} ({})', **kwargs):
@@ -74,7 +79,7 @@ class CobblerRecord(object):
                 val = None
             args[kw] = val
 
-        return(args)
+        return args
 
     def __str__(self):
         args = []
@@ -83,35 +88,78 @@ class CobblerRecord(object):
             if hasattr(self, kw):
                 val = getattr(self, kw)
 
-                if val is None or '' == val or '<<inherit>>' == val or {} == val or [] == val or ('owners' == kw and val == ['admin']):
+                if val is None or (not isinstance(val, Number) and len(val) == 0)or '<<inherit>>' == val or ('owners' == kw and val == ['admin']):
                     continue
-                elif 'owners' == kw and len(val) > 0:
-                    val = ' '.join(val)
-                elif kw in ('ctime', 'mtime'):
-                    val = str(val)
-                elif 'uid' == kw:
-                    continue
-                elif 'depth' == kw:
-                    continue
-                elif 'comment' == kw and len(val) == 0:
-                    continue
+                elif self.kw_map[kw][1] is not None:
+                    f = getattr(self, self.kw_map[kw][1])
+                    val = f(kw, val)
                 elif isinstance(val, dict):
                     val = ' '.join("{!s}={!s}".format(k, v)
                                    for (k, v) in val.items())
-                elif isinstance(val, str):
-                    val = quote(val)
-                elif kw in ('virt_file_size', 'virt_path') and isinstance(val, list):
-                    print(kw)
-                    print(val)
-                    val = ', '.join("{!s}={!s}".format(k, v)
-                                    for (k, v) in val.items())
 
-                arg = '--' + self.kw_map[kw] + '={}'.format(val)
-                args.append(arg)
+                if val is not None:
+                    arg = '--' + self.kw_map[kw][0] + \
+                        '={}'.format(quote(str(val)))
+                    args.append(arg)
 
         mapped_args = ' \\\n        '.join(args)
 
-        return(mapped_args)
+        return mapped_args
+
+    def boolNumberNotZero(self, kw, val):
+        '''
+        Convert a time value to a string but skip zero values
+        '''
+        if val is not None and val:
+            val = 1
+        else:
+            val = None
+        return val
+
+    def namedValues(self, kw, val):
+        '''
+        Output a value as a list of key=value pairs
+        '''
+        opts = []
+        for (k, v) in val.items():
+            if '~' == v:
+                opts.append('{!s}'.format(k))
+            else:
+                opts.append('{!s}={!s}'.format(k, v))
+
+        rv = ' '.join("{!s}={!s}".format(k, v)
+                      for (k, v) in val.items())
+
+        rv = ' '.join(opts)
+
+        return rv
+
+    def skip(self, kw, val):
+        return
+
+    def spaceList(self, kw, val):
+        '''
+        Take a list of values and output it as a list of space separated values
+        '''
+        rv = ' '.join(val)
+        return rv
+
+    def timeStr(self, kw, val):
+        '''
+        Convert a time value to a string
+        '''
+        val = str(val)
+        return val
+
+    def timeStrNotZero(self, kw, val):
+        '''
+        Convert a time value to a string but skip zero values
+        '''
+        if val is not None and val != 0.0:
+            val = str(val)
+        else:
+            val = None
+        return val
 
 
 if __name__ == "__main__":

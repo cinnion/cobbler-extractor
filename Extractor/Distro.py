@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.6
 '''
 Created on Apr 29, 2018
 
 @author: cinnion
 '''
 
-from Extractor.Cobbler import CobblerServer, CobblerRecord
+from Extractor.Cobbler import CobblerServer, CobblerRecord, KeywordMap
 from shlex import quote
 from operator import itemgetter, attrgetter
 #import sys
@@ -14,9 +14,9 @@ __all__ = [
     'Distros',
     'Distro'
 ]
-__version__ = 0.1
+__version__ = 0.5
 __date__ = '2018-05-01'
-__updated__ = '2018-05-01'
+__updated__ = '2018-05-25'
 
 
 class Distro(CobblerRecord):
@@ -24,29 +24,31 @@ class Distro(CobblerRecord):
     This is used to hold and output distributions.
     '''
 
-    kw_map = {
-        'ctime': 'ctime',
-        'mtime': 'mtime',
-        'uid': 'uid',
-        'owners': 'owners',
-        'kernel': 'kernel',
-        'initrd': 'initrd',
-        'kernel_options': 'kopts',
-        'kernel_options_post': 'kopts-post',
-        'ks_meta': 'ksmeta',
-        'arch': 'arch',
-        'breed': 'breed',
-        'os_version': 'os-version',
-        'source_repos': 'source-repos',
-        'depth': 'depth',
-        'comment': 'comment',
-        'tree_build_time': 'tree-build-time',
-        'mgmt_classes': 'mgmt-classes',
-        'boot_files': 'boot-files',
-        'fetchable_files': 'fetchable-files',
-        'template_files': 'template-files',
-        'redhat_management_key': 'redhat-management-key',
-        'redhat_management_server': 'redhat-management-server',
+    kw_map: KeywordMap = {
+        'uid':                          ('uid', 'skip'),
+        'ctime':                        ('ctime', 'timeStr'),
+        'mtime':                        ('mtime', 'timeStr'),
+        'depth':                        ('depth', 'skip'),
+        'source_repos':                 ('source-repos', None),
+        'tree_build_time':              ('tree-build-time', 'timeStrNotZero'),
+
+        'owners':                       ('owners', 'spaceList'),
+        'kernel':                       ('kernel', None),
+        'initrd':                       ('initrd', None),
+        'kernel_options':               ('kopts', 'namedValues'),
+        'kernel_options_post':          ('kopts-post', 'namedValues'),
+        'ks_meta':                      ('ksmeta', 'namedValues'),
+        'arch':                         ('arch', None),
+        'breed':                        ('breed', None),
+        'os_version':                   ('os-version', None),
+        'comment':                      ('comment', None),
+
+        'mgmt_classes':                 ('mgmt-classes', None),
+        'boot_files':                   ('boot-files', None),
+        'fetchable_files':              ('fetchable-files', None),
+        'template_files':               ('template-files', None),
+        'redhat_management_key':        ('redhat-management-key', None),
+        'redhat_management_server':     ('redhat-management-server', None),
     }
 
     def __init__(self, **kwargs):
@@ -92,7 +94,7 @@ class Distros(object):
         for dist in self.distro_list:
             cmds.append(str(dist))
 
-        return('\n\n'.join(cmds))
+        return('\n\n'.join(cmds) + '\n')
 
     def create_distro(self, **kwargs):
         d = Distro(**kwargs)

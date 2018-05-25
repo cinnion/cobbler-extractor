@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.6
 '''
 Extractor.Extract -- Extract cobbler configurations to shell scripts.
 
@@ -27,13 +27,16 @@ from argparse import SUPPRESS
 
 env = os.getenv('PYTHONPATH')
 from Extractor.Cobbler import CobblerServer
+from Extractor.Repo import Repos
+from Extractor.Image import Images
 from Extractor.Distro import Distros
 from Extractor.Profile import Profiles
+from Extractor.System import Systems
 
 __all__ = []
-__version__ = 0.1
+__version__ = 0.5
 __date__ = '2018-05-01'
-__updated__ = '2018-05-01'
+__updated__ = '2018-05-25'
 
 DEBUG = 1
 TESTRUN = 0
@@ -101,9 +104,19 @@ USAGE
         args = parser.parse_args()
 
         cobbler = CobblerServer(**vars(args))
+        x = Images(cobbler, hostname=args.host)
+        print(x)
+
+        x = Repos(cobbler, hostname=args.host)
+        print(x)
+
         x = Distros(cobbler, hostname=args.host)
         print(x)
+
         x = Profiles(cobbler, hostname=args.host)
+        print(x)
+
+        x = Systems(cobbler, hostname=args.host)
         print(x)
 
         return 0
