@@ -47,7 +47,7 @@ class Profile(CobblerRecord):
         'kernel_options_post':          ('kopts-post', 'namedValues'),
         'ks_meta':                      ('ksmeta', 'namedValues'),
         'proxy':                        ('proxy', None),
-        'repos':                        ('repos', None),
+        'repos':                        ('repos', 'spaceList'),
         'comment':                      ('comment', None),
 
         'enable_gpxe':                  ('enable-gpxe', None),
@@ -88,7 +88,7 @@ class Profile(CobblerRecord):
         mapped_args = super().__str__()
         args.append(mapped_args)
 
-        command = 'cobbler profile add ' + ' \\\n        '.join(args)
+        command = 'cobbler profile add ' + self.joinWrap.join(args)
 
         return(command)
 

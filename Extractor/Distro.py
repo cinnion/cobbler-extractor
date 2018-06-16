@@ -64,7 +64,7 @@ class Distro(CobblerRecord):
         mapped_args = super().__str__()
         args.append(mapped_args)
 
-        command = 'cobbler distro add ' + ' \\\n        '.join(args)
+        command = 'cobbler distro add ' + self.joinWrap.join(args)
 
         return(command)
 

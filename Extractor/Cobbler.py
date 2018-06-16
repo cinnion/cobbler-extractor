@@ -26,6 +26,7 @@ __date__ = '2018-05-01'
 __updated__ = '2018-05-25'
 
 KeywordMap = Dict[str, Tuple[str, Callable]]
+DepricatedKeywords = Dict[str, str]
 
 
 class CobblerServer(Server):
@@ -53,7 +54,18 @@ class CobblerRecord(object):
     This holds the base functionallity for handling the records for distros, profiles, systems, etc.
     '''
 
+    joinWrap = ' \\\n        '
+
     kw_map: KeywordMap = {
+    }
+
+    dep_kw_map: DepricatedKeywords = {
+    }
+
+    altered_fields = {
+        'kernel_options': 'kopts',
+        'kernel_options_post': 'kopts-post',
+        'ks_meta': 'ksmeta'
     }
 
     def __init__(self, message='Unrecognized keyword: {} ({})', **kwargs):
@@ -64,6 +76,8 @@ class CobblerRecord(object):
         for kw in kwargs:
             if kw in self.kw_map:
                 setattr(self, kw, kwargs[kw])
+            elif kw in self.dep_kw_map:
+                setattr(self, self.dep_kw_map[kw], kwargs[kw])
             elif 'name' == kw:
                 continue
             else:
@@ -87,8 +101,12 @@ class CobblerRecord(object):
         for kw in self.kw_map:
             if hasattr(self, kw):
                 val = getattr(self, kw)
+                if kw in self.altered_fields:
+                    option = self.altered_fields[kw]
+                else:
+                    option = kw.replace('_', '-')
 
-                if val is None or (not isinstance(val, Number) and len(val) == 0)or '<<inherit>>' == val or ('owners' == kw and val == ['admin']):
+                if val is None or (not isinstance(val, Number) and len(val) == 0) or '<<inherit>>' == val or ('owners' == kw and val == ['admin']):
                     continue
                 elif self.kw_map[kw][1] is not None:
                     f = getattr(self, self.kw_map[kw][1])
@@ -98,17 +116,27 @@ class CobblerRecord(object):
                                    for (k, v) in val.items())
 
                 if val is not None:
-                    arg = '--' + self.kw_map[kw][0] + \
+                    arg = '--' + option + \
                         '={}'.format(quote(str(val)))
                     args.append(arg)
 
-        mapped_args = ' \\\n        '.join(args)
+        mapped_args = self.joinWrap.join(args)
 
         return mapped_args
 
+    def boolNotFalse(self, kw, val):
+        '''
+        Convert a boolean value to a string but skip zero values
+        '''
+        if val is not None and val:
+            val = 'True'
+        else:
+            val = None
+        return val
+
     def boolNumberNotZero(self, kw, val):
         '''
-        Convert a time value to a string but skip zero values
+        Convert a boolean value to a number but skip zero values
         '''
         if val is not None and val:
             val = 1

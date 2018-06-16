@@ -64,7 +64,7 @@ class Image(CobblerRecord):
         mapped_args = super().__str__()
         args.append(mapped_args)
 
-        command = 'cobbler image add ' + ' \\\n        '.join(args)
+        command = 'cobbler image add ' + self.joinWrap.join(args)
 
         return(command)
 

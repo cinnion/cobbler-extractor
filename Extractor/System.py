@@ -8,7 +8,7 @@ Created on May 25, 2018
 from Extractor.Cobbler import CobblerServer, CobblerRecord, KeywordMap
 from shlex import quote
 from operator import itemgetter, attrgetter
-#import sys
+import sys
 
 __all__ = [
     'Systems',
@@ -17,6 +17,69 @@ __all__ = [
 __version__ = 0.5
 __date__ = '2018-05-25'
 __updated__ = '2018-05-25'
+
+
+class SystemInterface(CobblerRecord):
+    '''
+    This is used to hold and output an interface for a System.
+    '''
+
+    kw_map:  KeywordMap = {
+        'mac_address':                  ('mac-address', None),
+        'connected_mode':               ('connected-mode', 'boolNotFalse'),
+        'mtu':                          ('mtu', None),
+        'ip_address':                   ('ip-address', None),
+        'interface_type':               ('interface-type', None),
+        'interface_master':             ('interface-master', None),
+        'bonding_opts':                 ('bonding-opts', None),
+        'bridge_opts':                  ('bridge-opts', None),
+        'management':                   ('management', 'boolNotFalse'),
+        'static':                       ('static', 'boolNotFalse'),
+        'netmask':                      ('netmask', None),
+        'if_gateway':                   ('if-gateway', None),
+        'dhcp_tag':                     ('dhcp-tag', None),
+        'dns_name':                     ('dns-name', None),
+        'cnames':                       ('cnames', 'spaceList'),
+        'static_routes':                ('static-routes', 'spaceList'),
+        'virt_bridge':                  ('virt-bridge', None),
+        'ipv6_address':                 ('ipv6-address', None),
+        'ipv6_prefix':                  ('ipv6-prefix', None),
+        'ipv6_secondaries':             ('ipv6-secondaries', None),
+        'ipv6_mtu':                     ('ipv6-mtu', None),
+        'ipv6_static_routes':           ('ipv6-static-routes', None),
+        'ipv6_default_gateway':         ('ipv6-default-gateway', None),
+
+        'distro':                       ('', 'skip'),
+        'enable_gpxe':                  ('', 'skip'),
+        'filename':                     ('', 'skip'),
+        'gateway':                      ('', 'skip'),
+        'hostname':                     ('', 'skip'),
+        'netboot_enabled':              ('', 'skip'),
+        'next_server':                  ('', 'skip'),
+        'owner':                        ('', 'skip'),
+    }
+
+    dep_kw_map = {
+        'bonding':                      'interface_type',
+        'bonding_master':               'interface_master',
+        'bondingmaster':                'interface_master',
+        'bondingopts':                  'bondingopts',
+        'subnet':                       'netmask'
+    }
+
+    def __init__(self, interfaceName, **kwargs):
+        '''
+        Constructor, taking parameters named following the CLI parameter names and setting an attribute with the value.
+        '''
+        self.name = interfaceName
+        super().__init__(message='Unrecognized system keyword: {} (SystemInterface={})', **kwargs)
+
+    def __str__(self):
+        args = '--interface={}'.format(quote(self.name))
+
+        args += self.joinWrap + super().__str__()
+
+        return(args)
 
 
 class System(CobblerRecord):
@@ -43,7 +106,7 @@ class System(CobblerRecord):
         'kickstart':                    ('kickstart', None),
         'comment':                      ('comment', None),
 
-        'enable_gpxe':                  ('enable-gpxe', None),
+        'enable_gpxe':                  ('enable-gpxe', 'boolNotFalse'),
         'server':                       ('server', None),
 
         'hostname':                     ('hostname', None),
@@ -51,9 +114,9 @@ class System(CobblerRecord):
         'name_servers':                 ('name-servers', 'spaceList'),
         'name_servers_search':          ('name-servers-search', 'spaceList'),
         'ipv6_default_device':          ('ipv6-default-device', None),
-        'ipv6_autoconfiguration':       ('ipv6-autoconfiguration', None),
+        'ipv6_autoconfiguration':       ('ipv6-autoconfiguration', 'boolNotFalse'),
 
-        'interfaces':                   ('interface', None),
+        'interfaces':                   ('interface', 'skip'),
 
         'mgmt_classes':                 ('mgmt-classes', None),
         'mgmt_parameters':              ('mgmt-parameters', None),
@@ -62,10 +125,10 @@ class System(CobblerRecord):
         'template_files':               ('template-files', None),
         'redhat_management_key':        ('redhat-management-key', None),
         'redhat_management_server':     ('redhat-management-server', None),
-        'repos_enabled':                ('repos-enabled', None),
-        'ldap_enabled':                 ('ldap-enabled', None),
+        'repos_enabled':                ('repos-enabled', 'boolNotFalse'),
+        'ldap_enabled':                 ('ldap-enabled', 'boolNotFalse'),
         'ldap_type':                    ('ldap-type', None),
-        'monit_enabled':                ('monit-enabled', None),
+        'monit_enabled':                ('monit-enabled', 'boolNotFalse'),
 
         'virt_path':                    ('virt-path', None),
         'virt_type':                    ('virt-type', None),
@@ -74,44 +137,13 @@ class System(CobblerRecord):
         'virt_disk_driver':             ('virt-disk-driver', None),
         'virt_ram':                     ('virt-ram', None),
         'virt_auto_boot':               ('virt-auto-boot', 'boolNumberNotZero'),
-        'virt_pxe_boot':                ('virt-pxe-boot', None),
+        'virt_pxe_boot':                ('virt-pxe-boot', 'boolNotFalse'),
 
         'power_type':                   ('power-type', None),
         'power_address':                ('power-address', None),
         'power_user':                   ('power-user', None),
         'power_pass':                   ('power-pass', None),
         'power_id':                     ('power-id', None),
-
-        'cnames':                       ('cnames', 'spaceList'),
-    }
-
-    if_kw_map: KeywordMap = {
-        'mac_address':                  ('mac-address', None),
-        'connected_mode':               ('connected-mode', None),
-        'mtu':                          ('mtu', None),
-        'ip_address':                   ('ip-address', None),
-        'interface_type':               ('interface-type', None),
-        'bonding':                      ('bonding', None),
-        'bonding_master':               ('bonding_master', None),
-        'bonding_opts':                 ('bonding-opts', None),
-        'bridge_opts':                  ('bridge-opts', None),
-        'interface_master':             ('interface-master', None),
-        'management':                   ('management', None),
-        'static':                       ('static', None),
-        'netmask':                      ('netmask', None),
-        'if_gateway':                   ('if-gateway', None),
-        'dhcp_tag':                     ('dhcp-tag', None),
-        'dns_name':                     ('dns-name', None),
-        'static_routes':                ('static-routes', None),
-        'virt_bridge':                  ('virt-bridge', None),
-        'ipv6_address':                 ('ipv6-address', None),
-        'ipv6_prefix':                  ('ipv6-prefix', None),
-        'ipv6_secondaries':             ('ipv6-secondaries', None),
-        'ipv6_mtu':                     ('ipv6-mtu', None),
-        'ipv6_static_routes':           ('ipv6-static-routes', None),
-        'ipv6_default_gateway':         ('ipv6-default-gateway', None),
-
-        'subnet':                       ('subnet', None),
     }
 
     def __init__(self, **kwargs):
@@ -121,15 +153,27 @@ class System(CobblerRecord):
         self.name = kwargs.get('name')
         super().__init__(message='Unrecognized system keyword: {} (System={})', **kwargs)
 
+        self.interfaceList = []
+        for interface in self.interfaces:
+            self.interfaceList.append(self.create_interface(interface))
+
     def __str__(self):
         args = ['--name={}'.format(quote(self.name))]
 
         mapped_args = super().__str__()
         args.append(mapped_args)
 
-        command = 'cobbler system add ' + ' \\\n        '.join(args) + '\n'
+        command = 'cobbler system add ' + self.joinWrap.join(args) + '\n'
+
+        for interface in self.interfaceList:
+            command += 'cobbler system edit --name={}'.format(
+                quote(self.name)) + self.joinWrap + str(interface) + '\n'
 
         return(command)
+
+    def create_interface(self, interfaceName):
+        i = SystemInterface(interfaceName, **self.interfaces[interfaceName])
+        return(i)
 
 
 class Systems(object):

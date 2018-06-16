@@ -62,7 +62,7 @@ class Repo(CobblerRecord):
         mapped_args = super().__str__()
         args.append(mapped_args)
 
-        command = 'cobbler repo add ' + ' \\\n        '.join(args)
+        command = 'cobbler repo add ' + self.joinWrap.join(args)
 
         return(command)
 
