@@ -58,16 +58,6 @@ class Image(CobblerRecord):
         self.name = kwargs.get('name')
         super().__init__(message='Unrecognized distro keyword: {} (Image={})', **kwargs)
 
-    def __str__(self):
-        args = ['--name={}'.format(quote(self.name))]
-
-        mapped_args = super().__str__()
-        args.append(mapped_args)
-
-        command = 'cobbler image add ' + self.joinWrap.join(args)
-
-        return(command)
-
 
 class Images(object):
     '''

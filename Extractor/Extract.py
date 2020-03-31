@@ -60,6 +60,8 @@ class CLIError(Exception):
 def main(argv=None):  # IGNORE:C0111
     '''Command line options.'''
 
+    global showAdds
+
     if argv is None:
         argv = sys.argv
     else:
@@ -85,6 +87,11 @@ def main(argv=None):  # IGNORE:C0111
 USAGE
 ''' % (program_shortdesc, str(__date__))
 
+    cleanupFormat = r'''
+echo Cleaning up {0}s...
+cobbler {0} list | xargs -I '<>' -n 1 cobbler {0} remove --name='<>' --recursive
+'''
+
     try:
         # Setup argument parser
         parser = ArgumentParser(
@@ -99,23 +106,40 @@ USAGE
                             help="Protocol for the XMLRPC connection [default: %(default)s]")
         parser.add_argument("-a", "--api", dest="api", default="cobbler_api",
                             help="API specifier [default: %(default)s]")
+        parser.add_argument('-A', '--show-adds', dest="showAdds", action='store_true',
+                            help='Display the progress by showing the first line of the cobbler add commands')
+        parser.add_argument('-X', '--cleanup', dest='doCleanup', action='store_true',
+                            help='Run a cleanup statement to delete all existing objects')
 
         # Process arguments
         args = parser.parse_args()
 
+        if args.showAdds:
+            showAdds = args.showAdds
+
         cobbler = CobblerServer(**vars(args))
+        if args.doCleanup:
+            print(cleanupFormat.format('image'))
         x = Images(cobbler, hostname=args.host)
         print(x)
 
+        if args.doCleanup:
+            print(cleanupFormat.format('repo'))
         x = Repos(cobbler, hostname=args.host)
         print(x)
 
+        if args.doCleanup:
+            print(cleanupFormat.format('distro'))
         x = Distros(cobbler, hostname=args.host)
         print(x)
 
+        if args.doCleanup:
+            print(cleanupFormat.format('profile'))
         x = Profiles(cobbler, hostname=args.host)
         print(x)
 
+        if args.doCleanup:
+            print(cleanupFormat.format('system'))
         x = Systems(cobbler, hostname=args.host)
         print(x)
 

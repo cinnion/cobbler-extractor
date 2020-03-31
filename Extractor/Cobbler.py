@@ -19,7 +19,8 @@ from numbers import Number
 __all__ = [
     'CobblerServer',
     'CobblerRecord',
-    'KeywordMap'
+    'KeywordMap',
+    'DepricatedKeywords',
 ]
 __version__ = 0.5
 __date__ = '2018-05-01'
@@ -28,16 +29,20 @@ __updated__ = '2018-05-25'
 KeywordMap = Dict[str, Tuple[str, Callable]]
 DepricatedKeywords = Dict[str, str]
 
+_showAdds = False
+
 
 class CobblerServer(Server):
     '''
     This is the module for talking to the cobbler server
     '''
 
-    def __init__(self, protocol='http', host='cobbler', api='cobbler_api', **kwargs):
+    def __init__(self, protocol='http', host='cobbler', api='cobbler_api', showAdds=None, **kwargs):
         '''
         Constructor
         '''
+        global _showAdds
+
         if protocol not in ('http', 'https'):
             raise OSError("unsupported cobbler xmlrpc protocol")
 
@@ -45,6 +50,9 @@ class CobblerServer(Server):
         self.host = host
         self.api = api
         url = self.protocol + '://' + self.host + '/' + self.api
+
+        if showAdds is not None:
+            _showAdds = showAdds
 
         self.server = super().__init__(url, allow_none=True)
 
@@ -96,6 +104,21 @@ class CobblerRecord(object):
         return args
 
     def __str__(self):
+
+        global _showAdds
+
+        command = ''
+        objectType = type(self).__name__
+
+        if objectType != 'SystemInterface':
+            command = 'cobbler ' + objectType.lower() + \
+                ' add --name={}'.format(quote(self.name))
+
+            if _showAdds:
+                command = 'echo ' + command + '\n' + command
+
+            command += self.joinWrap
+
         args = []
 
         for kw in self.kw_map:
@@ -122,7 +145,7 @@ class CobblerRecord(object):
 
         mapped_args = self.joinWrap.join(args)
 
-        return mapped_args
+        return command + mapped_args
 
     def boolNotFalse(self, kw, val):
         '''

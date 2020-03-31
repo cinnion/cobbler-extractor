@@ -82,16 +82,6 @@ class Profile(CobblerRecord):
         self.name = kwargs.get('name')
         super().__init__('Unrecognized profile keyword: {} (Profile={})', **kwargs)
 
-    def __str__(self):
-        args = ['--name={}'.format(quote(self.name))]
-
-        mapped_args = super().__str__()
-        args.append(mapped_args)
-
-        command = 'cobbler profile add ' + self.joinWrap.join(args)
-
-        return(command)
-
 
 class Profiles(CobblerServer):
     '''

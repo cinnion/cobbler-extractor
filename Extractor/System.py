@@ -71,8 +71,8 @@ class SystemInterface(CobblerRecord):
         '''
         Constructor, taking parameters named following the CLI parameter names and setting an attribute with the value.
         '''
-        self.name = interfaceName
         super().__init__(message='Unrecognized system keyword: {} (SystemInterface={})', **kwargs)
+        self.name = interfaceName
 
     def __str__(self):
         args = '--interface={}'.format(quote(self.name))
@@ -158,16 +158,12 @@ class System(CobblerRecord):
             self.interfaceList.append(self.create_interface(interface))
 
     def __str__(self):
-        args = ['--name={}'.format(quote(self.name))]
 
-        mapped_args = super().__str__()
-        args.append(mapped_args)
-
-        command = 'cobbler system add ' + self.joinWrap.join(args) + '\n'
+        command = super().__str__()
 
         for interface in self.interfaceList:
-            command += 'cobbler system edit --name={}'.format(
-                quote(self.name)) + self.joinWrap + str(interface) + '\n'
+            command += '\ncobbler system edit --name={}'.format(
+                quote(self.name)) + self.joinWrap + str(interface)
 
         return(command)
 

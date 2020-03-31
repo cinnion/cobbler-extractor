@@ -56,16 +56,6 @@ class Repo(CobblerRecord):
         self.name = kwargs.get('name')
         super().__init__(message='Unrecognized repo keyword: {} (Repo={})', **kwargs)
 
-    def __str__(self):
-        args = ['--name={}'.format(quote(self.name))]
-
-        mapped_args = super().__str__()
-        args.append(mapped_args)
-
-        command = 'cobbler repo add ' + self.joinWrap.join(args)
-
-        return(command)
-
 
 class Repos(CobblerServer):
     '''
