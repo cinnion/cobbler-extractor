@@ -31,28 +31,28 @@ class Repo(CobblerRecord):
     """
 
     kw_map: KeywordMap = {
-        'uid': ('uid', 'skip'),
-        'ctime': ('ctime', 'timeStr'),
-        'mtime': ('mtime', 'timeStr'),
-        'depth': ('depth', 'skip'),
-        'parent': ('parent', None),
+        'uid':                          ('uid', 'skip'),
+        'ctime':                        ('ctime', 'skip'),
+        'mtime':                        ('mtime', 'skip'),
+        'depth':                        ('depth', 'skip'),
+        'parent':                       ('parent', None),
 
-        'arch': ('arch', None),
-        'breed': ('breed', None),
-        'comment': ('comment', None),
-        'keep_updated': ('keep-updated', None),
-        'mirror': ('mirror', None),
-        'owners': ('owners', 'spaceList'),
-        'rpm_list': ('rpm-list', None),
-        'proxy': ('proxy', None),
+        'arch':                         ('arch', None),
+        'breed':                        ('breed', None),
+        'comment':                      ('comment', None),
+        'keep_updated':                 ('keep-updated', None),
+        'mirror':                       ('mirror', None),
+        'owners':                       ('owners', 'spaceList'),
+        'rpm_list':                     ('rpm-list', None),
+        'proxy':                        ('proxy', None),
 
-        'apt_components': ('apt-components', None),
-        'apt_dists': ('apt-dists', None),
-        'createrepo_flags': ('createrepo-flags', None),
-        'environment': ('environment', None),
-        'mirror_locally': ('mirror-locally', None),
-        'priority': ('priority', None),
-        'yumopts': ('yumopts', None),
+        'apt_components':               ('apt-components', None),
+        'apt_dists':                    ('apt-dists', None),
+        'createrepo_flags':             ('createrepo-flags', None),
+        'environment':                  ('environment', None),
+        'mirror_locally':               ('mirror-locally', None),
+        'priority':                     ('priority', None),
+        'yumopts':                      ('yumopts', None),
     }
 
     def __init__(self, **kwargs):

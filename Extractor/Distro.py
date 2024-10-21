@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 '''
 Created on Apr 29, 2018
 
@@ -26,8 +26,8 @@ class Distro(CobblerRecord):
 
     kw_map: KeywordMap = {
         'uid':                          ('uid', 'skip'),
-        'ctime':                        ('ctime', 'timeStr'),
-        'mtime':                        ('mtime', 'timeStr'),
+        'ctime':                        ('ctime', 'skip'),
+        'mtime':                        ('mtime', 'skip'),
         'depth':                        ('depth', 'skip'),
         'source_repos':                 ('source-repos', None),
         'tree_build_time':              ('tree-build-time', 'timeStrNotZero'),
@@ -35,9 +35,9 @@ class Distro(CobblerRecord):
         'owners':                       ('owners', 'spaceList'),
         'kernel':                       ('kernel', None),
         'initrd':                       ('initrd', None),
-        'kernel_options':               ('kopts', 'namedValues'),
-        'kernel_options_post':          ('kopts-post', 'namedValues'),
-        'ks_meta':                      ('ksmeta', 'namedValues'),
+        'kernel_options':               ('kernel-options', 'namedValues'),
+        'kernel_options_post':          ('kernel-options-post', 'namedValues'),
+        'ks_meta':                      ('autoinstall-meta', 'namedValues'),
         'arch':                         ('arch', None),
         'breed':                        ('breed', None),
         'os_version':                   ('os-version', None),

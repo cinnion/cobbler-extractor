@@ -71,12 +71,12 @@ class CobblerRecord(object):
     }
 
     dep_kw_map: DeprecatedKeywords = {
+        'template_remote_kickstarts': ''
     }
 
     altered_fields = {
-        'kernel_options': 'kopts',
-        'kernel_options_post': 'kopts-post',
-        'ks_meta': 'ksmeta'
+        'kickstart': 'autoinstall',
+        'ks_meta': 'autoinstall-meta'
     }
 
     def __init__(self, message='Unrecognized keyword: {} ({})', **kwargs):
@@ -129,8 +129,10 @@ class CobblerRecord(object):
                 val = getattr(self, kw)
                 if kw in self.altered_fields:
                     option = self.altered_fields[kw]
+                elif kw in self.dep_kw_map:
+                    continue
                 else:
-                    option = kw.replace('_', '-')
+                    option = self.kw_map[kw][0]
 
                 if (val is None or (not isinstance(val, Number) and len(val) == 0) or '<<inherit>>' == val or
                         ('owners' == kw and val == ['admin'])):

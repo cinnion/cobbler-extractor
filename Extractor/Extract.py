@@ -29,6 +29,7 @@ from Cobbler import CobblerServer
 from Repo import Repos
 from Image import Images
 from Distro import Distros
+from MgmtClass import MgmtClasses
 from Profile import Profiles
 from System import Systems
 
@@ -117,6 +118,12 @@ cobbler {0} list | xargs -I '<>' -n 1 cobbler {0} remove --name='<>' --recursive
 
         if args.showAdds:
             showAdds = args.showAdds
+
+        cobbler = CobblerServer(**vars(args))
+        if args.doCleanup:
+            print(cleanupFormat.format('mgmtclass'))
+        x = MgmtClasses(cobbler, hostname=args.host)
+        print(x)
 
         cobbler = CobblerServer(**vars(args))
         if args.doCleanup:

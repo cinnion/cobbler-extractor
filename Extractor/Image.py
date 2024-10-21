@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 """
 Created on May 25, 2018
 
@@ -31,30 +31,30 @@ class Image(CobblerRecord):
     """
 
     kw_map: KeywordMap = {
-        'uid': ('uid', 'skip'),
-        'ctime': ('ctime', 'timeStr'),
-        'mtime': ('mtime', 'timeStr'),
-        'depth': ('depth', 'skip'),
-        'parent': ('parent', None),
+        'uid':                          ('uid', 'skip'),
+        'ctime':                        ('ctime', 'skip'),
+        'mtime':                        ('mtime', 'skip'),
+        'depth':                        ('depth', 'skip'),
+        'parent':                       ('parent', None),
 
-        'arch': ('arch', None),
-        'breed': ('breed', None),
-        'comment': ('comment', None),
-        'file': ('file', None),
-        'image_type': ('image-type', None),
-        'network_count': ('network-count', None),
-        'os_version': ('os-version', None),
-        'owners': ('owners', None),
-        'kickstart': ('kickstart', None),
+        'arch':                         ('arch', None),
+        'breed':                        ('breed', None),
+        'comment':                      ('comment', None),
+        'file':                         ('file', None),
+        'image_type':                   ('image-type', None),
+        'network_count':                ('network-count', None),
+        'os_version':                   ('os-version', None),
+        'owners':                       ('owners', None),
+        'kickstart':                    ('autostart', None),
 
-        'virt_auto_boot': ('virt-auto-boot', None),
-        'virt_bridge': ('virt-bridge', None),
-        'virt_cpus': ('virt-cpus', None),
-        'virt_file_size': ('virt-file-size', None),
-        'virt_disk_driver': ('virt-disk-driver', None),
-        'virt_path': ('virt-path', None),
-        'virt_ram': ('virt-ram', None),
-        'virt_type': ('virt-type', None),
+        'virt_auto_boot':               ('virt-auto-boot', None),
+        'virt_bridge':                  ('virt-bridge', None),
+        'virt_cpus':                    ('virt-cpus', None),
+        'virt_file_size':               ('virt-file-size', None),
+        'virt_disk_driver':             ('virt-disk-driver', None),
+        'virt_path':                    ('virt-path', None),
+        'virt_ram':                     ('virt-ram', None),
+        'virt_type':                    ('virt-type', None),
     }
 
     def __init__(self, **kwargs):
